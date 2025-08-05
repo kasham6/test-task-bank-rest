@@ -11,8 +11,9 @@ public record TokenRequest(
         @Schema(
                 description = "Текущий refresh-токен",
                 example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         String refreshToken
 
-) { }
+) {
+}

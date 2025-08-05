@@ -1,11 +1,13 @@
 package com.example.bankcards.exception;
 
 import com.example.bankcards.dto.ApiError;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,7 +24,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
-                        fe -> fe.getField(),
+                        FieldError::getField,
                         fe -> fe.getDefaultMessage() == null ? "invalid" : fe.getDefaultMessage(),
                         (existing, replacement) -> existing
                 ));
@@ -41,7 +43,7 @@ public class GlobalExceptionHandler {
         Map<String, String> details = ex.getConstraintViolations().stream()
                 .collect(Collectors.toMap(
                         v -> v.getPropertyPath().toString(),
-                        v -> v.getMessage(),
+                        ConstraintViolation::getMessage,
                         (a, b) -> a
                 ));
         ApiError err = ApiError.builder()
@@ -80,7 +82,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDBIntegrity(DataIntegrityViolationException ex) {
-        String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        String msg = ex.getMostSpecificCause().getMessage();
         ApiError err = ApiError.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.CONFLICT.value())

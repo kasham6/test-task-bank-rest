@@ -20,7 +20,7 @@ public class TransferRequest {
     @Schema(
             description = "UUID карты-отправителя",
             example = "e7b9f27a-4c76-4bd1-9f12-123456789abc",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID fromCardId;
 
@@ -28,7 +28,7 @@ public class TransferRequest {
     @Schema(
             description = "UUID карты-получателя",
             example = "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID toCardId;
 
@@ -37,7 +37,7 @@ public class TransferRequest {
     @Schema(
             description = "Сумма перевода (положительное число)",
             example = "1500.00",
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             minimum = "0.01"
     )
     private BigDecimal amount;

@@ -1,4 +1,4 @@
-package com.example.bankcards.config;
+package com.example.bankcards.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -6,4 +6,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record EncryptionProperties(
         AesGcmProperties aesGcm
 ) {
-};
+}

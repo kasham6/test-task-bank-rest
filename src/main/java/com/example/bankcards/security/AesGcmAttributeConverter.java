@@ -1,7 +1,7 @@
 package com.example.bankcards.security;
 
 
-import com.example.bankcards.config.EncryptionProperties;
+import com.example.bankcards.config.properties.EncryptionProperties;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.springframework.beans.factory.annotation.Autowired;

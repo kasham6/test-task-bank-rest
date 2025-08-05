@@ -14,35 +14,35 @@ public record CardDto(
                 type = "string",
                 format = "uuid",
                 example = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         UUID id,
 
         @Schema(
                 description = "Замаскированный номер карты, с сохранением последних 4 цифр",
                 example = "**** **** **** 1234",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         String maskedNumber,
 
         @Schema(
                 description = "Статус карты",
                 example = "ACTIVE",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         String status,
 
         @Schema(
                 description = "Текущий баланс карты",
                 example = "1500.75",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         BigDecimal balance,
 
         @Schema(
                 description = "Дата окончания срока действия карты",
                 example = "2025-12-31",
-                required = true
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
         LocalDate expiry
 ) {

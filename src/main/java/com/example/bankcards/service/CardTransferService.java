@@ -31,7 +31,8 @@ public class CardTransferService {
         }
         if (!from.isActive() || !to.isActive()) throw new IllegalStateException("Card not active");
         if (from.getBalance().compareTo(req.getAmount()) < 0) throw new IllegalStateException("Insufficient funds");
-        if (req.getFromCardId().equals(req.getToCardId())) throw new IllegalArgumentException("Cannot transfer to same card");
+        if (req.getFromCardId().equals(req.getToCardId()))
+            throw new IllegalArgumentException("Cannot transfer to same card");
 
         from.setBalance(from.getBalance().subtract(req.getAmount()));
         to.setBalance(to.getBalance().add(req.getAmount()));

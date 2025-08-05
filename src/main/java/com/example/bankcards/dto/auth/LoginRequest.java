@@ -18,7 +18,7 @@ public class LoginRequest {
     @Schema(
             description = "Имя пользователя (обычно e-mail)",
             example = "user@example.com",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String username;
 
@@ -26,8 +26,8 @@ public class LoginRequest {
     @Schema(
             description = "Пароль пользователя",
             example = "P@ssw0rd123",
-            required = true,
-            minLength = 6
+            minLength = 6,
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String password;
 }

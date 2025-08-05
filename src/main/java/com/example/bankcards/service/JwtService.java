@@ -1,11 +1,15 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.config.JwtConfig;
+import com.example.bankcards.config.properties.JwtProperties;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.util.PemUtils;
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.*;
-import com.nimbusds.jwt.*;
+import com.nimbusds.jose.crypto.RSADecrypter;
+import com.nimbusds.jose.crypto.RSAEncrypter;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,20 +23,20 @@ import java.util.UUID;
 @Slf4j
 public class JwtService {
     private final RSAPrivateKey signPriv;
-    private final RSAPublicKey  signPub;
+    private final RSAPublicKey signPub;
     private final RSAPrivateKey encPriv;
-    private final RSAPublicKey  encPub;
-    private final long          ACCESS_EXP;
-    private final long          REFRESH_EXP;
+    private final RSAPublicKey encPub;
+    private final long ACCESS_EXP;
+    private final long REFRESH_EXP;
 
-    public JwtService(JwtConfig prop) {
+    public JwtService(JwtProperties prop) {
         if (prop == null) throw new IllegalStateException("JwtConfig not provided");
-        this.signPriv  = (RSAPrivateKey) PemUtils.readPrivateKey(prop.getSign().getPrivateKey(), "RSA");
-        this.signPub   = (RSAPublicKey)  PemUtils.readPublicKey(prop.getSign().getPublicKey(),  "RSA");
-        this.encPriv   = (RSAPrivateKey) PemUtils.readPrivateKey(prop.getEnc().getPrivateKey(),  "RSA");
-        this.encPub    = (RSAPublicKey)  PemUtils.readPublicKey(prop.getEnc().getPublicKey(),   "RSA");
-        this.ACCESS_EXP  = prop.getAccessExp();
-        this.REFRESH_EXP = prop.getRefreshExp();
+        this.signPriv = PemUtils.readPrivateKey(prop.sign().privateKey(), "RSA");
+        this.signPub = PemUtils.readPublicKey(prop.sign().publicKey(), "RSA");
+        this.encPriv = PemUtils.readPrivateKey(prop.enc().privateKey(), "RSA");
+        this.encPub = PemUtils.readPublicKey(prop.enc().publicKey(), "RSA");
+        this.ACCESS_EXP = prop.accessExp();
+        this.REFRESH_EXP = prop.refreshExp();
     }
 
     public String generateAccessToken(User user) throws JOSEException {

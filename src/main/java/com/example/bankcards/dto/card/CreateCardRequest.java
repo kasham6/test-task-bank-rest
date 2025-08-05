@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
 import java.util.UUID;
 
 @Getter
@@ -25,7 +24,7 @@ public class CreateCardRequest {
             type = "string",
             format = "uuid",
             example = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private UUID ownerId;
 
@@ -35,7 +34,7 @@ public class CreateCardRequest {
             description = "Номер карты, 12–19 цифр без пробелов",
             example = "1234567812345678",
             pattern = "\\d{12,19}",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String number;
 
@@ -45,28 +44,24 @@ public class CreateCardRequest {
             description = "Срок действия карты в формате YYYY-MM",
             example = "2025-12",
             pattern = "\\d{4}-\\d{2}",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String expiry;
 
     @NotNull
-    @DecimalMin(value = "0.00", inclusive = true)
+    @DecimalMin(value = "0.00")
     @Schema(
             description = "Начальный баланс карты (неотрицательное число)",
             example = "0.00",
             minimum = "0.00",
             defaultValue = "0.00"
     )
-    private BigDecimal balance = BigDecimal.ZERO;
+    private BigDecimal balance;
 
     @Schema(
             description = "Статус карты",
             example = "ACTIVE",
             defaultValue = "ACTIVE"
     )
-    private String status = "ACTIVE";
-
-    public YearMonth getExpiryAsYearMonth() {
-        return YearMonth.parse(expiry);
-    }
+    private String status;
 }

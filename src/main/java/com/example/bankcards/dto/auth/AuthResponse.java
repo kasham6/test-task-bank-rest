@@ -12,21 +12,21 @@ public class AuthResponse {
     @Schema(
             description = "Access токен для авторизации в API",
             example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... ",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private final String accessToken;
 
     @Schema(
             description = "Refresh токен для получения нового access токена",
             example = "dGhpcy1pcy1hLXJlZnJlc2gtdG9rZW4...",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private final String refreshToken;
 
     @Schema(
             description = "Тип токена",
             example = "Bearer",
-            required = true
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     private final String tokenType = "Bearer";
 }
