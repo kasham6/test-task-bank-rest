@@ -1,0 +1,61 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankcards
+    username: marus
+    password: marus
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
+
+  springdoc:
+    api-docs:
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui/index.html
+
+  liquibase:
+    change-log: classpath:db/changelog/db-changelog-master.yaml
+    enabled: true
+
+
+jwt:
+  sign:
+    private-key: keys/rsa-sign-priv.pem
+    public-key: keys/rsa-sign-pub.pem
+  enc:
+    private-key: keys/rsa-enc-priv.pem
+    public-key: keys/rsa-enc-pub.pem
+  access-exp: 900000
+  refresh-exp: 604800000
+
+
+encryption:
+  aes-gcm:
+    key: ${ENCRYPTION_KEY}
+
+logging:
+  level:
+    root: INFO
+    com.example.bankcards: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+
+app:
+  pagination:
+    default-size: 20
+    max-size: 100

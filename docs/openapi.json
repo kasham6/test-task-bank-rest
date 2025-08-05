@@ -1,0 +1,892 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bank Cards API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Регистрация, логин, обновление и выход"
+    },
+    {
+      "name": "Admin Cards",
+      "description": "Управление картами (только для ADMIN)"
+    },
+    {
+      "name": "Cards",
+      "description": "Операции с банковскими картами пользователя"
+    }
+  ],
+  "paths": {
+    "/cards/{id}/request-block": {
+      "post": {
+        "tags": [
+          "Cards"
+        ],
+        "summary": "Запрос на блокировку карты",
+        "description": "Пользователь может запросить блокировку своей карты",
+        "operationId": "requestBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID карты",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Запрос обработан / карта заблокирована",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": {
+                    "status": "blocked"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Попытка блокировки чужой карты",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cards/transfer": {
+      "post": {
+        "tags": [
+          "Cards"
+        ],
+        "summary": "Перевод между своими картами",
+        "description": "Переводит указанную сумму с одной своей карты на другую. Проверяет, что обе карты принадлежат пользователю, активны и достаточно средств.",
+        "operationId": "transfer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Перевод выполнен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "example": {
+                    "status": "ok"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неправильный запрос (например, перевод на ту же карту, недостаточно средств)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ запрещён (чужая карта)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Регистрация пользователя",
+        "description": "Создает нового пользователя с ролью USER и возвращает access + refresh токены",
+        "operationId": "signUp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Токены получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неправильный ввод или имя занято",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Обновить access token",
+        "description": "Обновляет access (и, при необходимости, refresh) токен по валидному refresh token",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Новый access/refresh получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "refreshToken не передан или пуст",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Невалидный или просроченный refresh token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Выход (отзыв refresh token)",
+        "description": "Аннулирует переданный refresh token",
+        "operationId": "logout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Успешный logout"
+          },
+          "400": {
+            "description": "refreshToken не передан или пуст",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Авторизация пользователя",
+        "description": "Логинит по username/password и возвращает access + refresh токены",
+        "operationId": "logIn",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Токены получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неверные учётные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/cards": {
+      "post": {
+        "tags": [
+          "Admin Cards"
+        ],
+        "summary": "Создать карту для пользователя",
+        "description": "ADMIN создаёт карту. Номер будет зашифрован, сохраняется last4 для поиска.",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Карта создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неправильный входной запрос",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/cards/{id}/status": {
+      "patch": {
+        "tags": [
+          "Admin Cards"
+        ],
+        "summary": "Изменить статус карты",
+        "description": "ADMIN может сменить статус (ACTIVE, BLOCKED, EXPIRED)",
+        "operationId": "changeStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID карты",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Новый статус",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "BLOCKED",
+                "EXPIRED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Статус обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Карта не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cards": {
+      "get": {
+        "tags": [
+          "Cards"
+        ],
+        "summary": "Список своих карт",
+        "description": "Возвращает страницу собственных карт с фильтрацией по статусу и поиском по последним 4 цифрам или имени владельца",
+        "operationId": "listOwn",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Номер страницы (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Размер страницы",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Статус карты",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ACTIVE"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Поисковый термин: последние 4 цифры или имя владельца",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Страница карт",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/cards/{id}": {
+      "delete": {
+        "tags": [
+          "Admin Cards"
+        ],
+        "summary": "Удалить карту",
+        "description": "ADMIN удаляет карту. Провалится, если есть связанные переводы (конфликт).",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID карты",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Удалено"
+          },
+          "409": {
+            "description": "Нельзя удалить из-за связанных переводов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TransferRequest": {
+        "type": "object",
+        "description": "Запрос на перевод средств между картами",
+        "properties": {
+          "fromCardId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID карты-отправителя",
+            "example": "e7b9f27a-4c76-4bd1-9f12-123456789abc"
+          },
+          "toCardId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID карты-получателя",
+            "example": "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Сумма перевода (положительное число)",
+            "example": 1500,
+            "minimum": 0.01
+          }
+        },
+        "required": [
+          "amount",
+          "fromCardId",
+          "toCardId"
+        ]
+      },
+      "RegistryRequest": {
+        "type": "object",
+        "description": "Запрос для регистрации нового пользователя",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Уникальное имя пользователя (обычно e-mail)",
+            "example": "user@example.com",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "Пароль пользователя",
+            "example": "P@ssw0rd123",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "password",
+          "username"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "description": "Ответ с access и refresh токенами после регистрации или входа",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Access токен для авторизации в API",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... "
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh токен для получения нового access токена",
+            "example": "dGhpcy1pcy1hLXJlZnJlc2gtdG9rZW4..."
+          },
+          "tokenType": {
+            "type": "string",
+            "description": "Тип токена",
+            "example": "Bearer"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tokenType"
+        ]
+      },
+      "TokenRequest": {
+        "type": "object",
+        "description": "Запрос с refresh-токеном для обновления access-токена или выхода",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Текущий refresh-токен",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "Запрос для аутентификации пользователя по имени и паролю",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Имя пользователя (обычно e-mail)",
+            "example": "user@example.com",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "Пароль пользователя",
+            "example": "P@ssw0rd123",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "password",
+          "username"
+        ]
+      },
+      "CreateCardRequest": {
+        "type": "object",
+        "description": "Запрос на создание новой банковской карты",
+        "properties": {
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID владельца карты",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "number": {
+            "type": "string",
+            "description": "Номер карты, 12–19 цифр без пробелов",
+            "example": 1234567812345678,
+            "minLength": 1,
+            "pattern": "\\d{12,19}"
+          },
+          "expiry": {
+            "type": "string",
+            "description": "Срок действия карты в формате YYYY-MM",
+            "example": "2025-12",
+            "pattern": "\\d{4}-\\d{2}"
+          },
+          "balance": {
+            "type": "number",
+            "default": "0.00",
+            "description": "Начальный баланс карты (неотрицательное число)",
+            "example": 0,
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "default": "ACTIVE",
+            "description": "Статус карты",
+            "example": "ACTIVE"
+          },
+          "expiryAsYearMonth": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "expiry",
+          "number",
+          "ownerId"
+        ]
+      },
+      "CardDto": {
+        "type": "object",
+        "description": "DTO для представления данных карты",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Уникальный идентификатор карты",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "maskedNumber": {
+            "type": "string",
+            "description": "Замаскированный номер карты, с сохранением последних 4 цифр",
+            "example": "**** **** **** 1234"
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус карты",
+            "example": "ACTIVE"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Текущий баланс карты",
+            "example": 1500.75
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "description": "Дата окончания срока действия карты",
+            "example": "2025-12-31"
+          }
+        },
+        "required": [
+          "balance",
+          "expiry",
+          "id",
+          "maskedNumber",
+          "status"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "name": "Authorization",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
